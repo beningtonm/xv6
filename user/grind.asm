@@ -1918,13 +1918,8 @@ uptime:
      ecc:	8082                	ret
 
 0000000000000ece <getfilenum>:
-.global getfilenum
-getfilenum:
- li a7, SYS_getfilenum
      ece:	48d9                	li	a7,22
- ecall
      ed0:	00000073          	ecall
- ret
      ed4:	8082                	ret
 
 0000000000000ed6 <putc>:

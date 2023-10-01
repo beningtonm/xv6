@@ -4804,75 +4804,75 @@ kill(int pid)
 
 00000000800022ca <getfilenum>:
 
-
-int
-getfilenum(int pid)
+void
+setkilled(struct proc *p)
 {
+  acquire(&p->lock);
     800022ca:	1141                	add	sp,sp,-16
     800022cc:	e422                	sd	s0,8(sp)
     800022ce:	0800                	add	s0,sp,16
-  struct proc *p;
-  int count = 0;
+  p->killed = 1;
+  release(&p->lock);
+}
 
-  for (p = proc; p < &proc[NPROC]; p++) {
     800022d0:	0000f797          	auipc	a5,0xf
     800022d4:	ca078793          	add	a5,a5,-864 # 80010f70 <proc>
     800022d8:	00014697          	auipc	a3,0x14
     800022dc:	69868693          	add	a3,a3,1688 # 80016970 <tickslock>
-    if (p->pid == pid) {
+int
     800022e0:	5b98                	lw	a4,48(a5)
     800022e2:	00a70a63          	beq	a4,a0,800022f6 <getfilenum+0x2c>
-  for (p = proc; p < &proc[NPROC]; p++) {
+
     800022e6:	16878793          	add	a5,a5,360
     800022ea:	fed79be3          	bne	a5,a3,800022e0 <getfilenum+0x16>
-        }
-      
-      return count;
-    }
-  }
-  return -1; // Process with given pid not found
-    800022ee:	557d                	li	a0,-1
+  
+  acquire(&p->lock);
+  k = p->killed;
+  release(&p->lock);
+  return k;
 }
+    800022ee:	557d                	li	a0,-1
+
     800022f0:	6422                	ld	s0,8(sp)
     800022f2:	0141                	add	sp,sp,16
     800022f4:	8082                	ret
     800022f6:	0d078713          	add	a4,a5,208
     800022fa:	15078793          	add	a5,a5,336
-  int count = 0;
+  release(&p->lock);
     800022fe:	4501                	li	a0,0
     80002300:	a029                	j	8000230a <getfilenum+0x40>
-            count++;
+  int k;
     80002302:	2505                	addw	a0,a0,1
-        for (int i = 0; i < NOFILE; i++) {
+killed(struct proc *p)
     80002304:	0721                	add	a4,a4,8
     80002306:	fef705e3          	beq	a4,a5,800022f0 <getfilenum+0x26>
-          if (p->ofile[i] != 0)
+{
     8000230a:	6314                	ld	a3,0(a4)
     8000230c:	fafd                	bnez	a3,80002302 <getfilenum+0x38>
     8000230e:	bfdd                	j	80002304 <getfilenum+0x3a>
 
 0000000080002310 <setkilled>:
-
-void
-setkilled(struct proc *p)
-{
+// Copy to either a user address, or kernel address,
+// depending on usr_dst.
+// Returns 0 on success, -1 on error.
+int
     80002310:	1101                	add	sp,sp,-32
     80002312:	ec06                	sd	ra,24(sp)
     80002314:	e822                	sd	s0,16(sp)
     80002316:	e426                	sd	s1,8(sp)
     80002318:	1000                	add	s0,sp,32
     8000231a:	84aa                	mv	s1,a0
-  acquire(&p->lock);
+either_copyout(int user_dst, uint64 dst, void *src, uint64 len)
     8000231c:	fffff097          	auipc	ra,0xfffff
     80002320:	8b6080e7          	jalr	-1866(ra) # 80000bd2 <acquire>
-  p->killed = 1;
+{
     80002324:	4785                	li	a5,1
     80002326:	d49c                	sw	a5,40(s1)
-  release(&p->lock);
+  struct proc *p = myproc();
     80002328:	8526                	mv	a0,s1
     8000232a:	fffff097          	auipc	ra,0xfffff
     8000232e:	95c080e7          	jalr	-1700(ra) # 80000c86 <release>
-}
+  if(user_dst){
     80002332:	60e2                	ld	ra,24(sp)
     80002334:	6442                	ld	s0,16(sp)
     80002336:	64a2                	ld	s1,8(sp)
@@ -4880,10 +4880,10 @@ setkilled(struct proc *p)
     8000233a:	8082                	ret
 
 000000008000233c <killed>:
-
-int
-killed(struct proc *p)
-{
+    return copyout(p->pagetable, dst, src, len);
+  } else {
+    memmove((char *)dst, src, len);
+    return 0;
     8000233c:	1101                	add	sp,sp,-32
     8000233e:	ec06                	sd	ra,24(sp)
     80002340:	e822                	sd	s0,16(sp)
@@ -4891,19 +4891,19 @@ killed(struct proc *p)
     80002344:	e04a                	sd	s2,0(sp)
     80002346:	1000                	add	s0,sp,32
     80002348:	84aa                	mv	s1,a0
-  int k;
-  
-  acquire(&p->lock);
+  }
+}
+
     8000234a:	fffff097          	auipc	ra,0xfffff
     8000234e:	888080e7          	jalr	-1912(ra) # 80000bd2 <acquire>
-  k = p->killed;
+// Copy from either a user address, or kernel address,
     80002352:	0284a903          	lw	s2,40(s1)
-  release(&p->lock);
+// depending on usr_src.
     80002356:	8526                	mv	a0,s1
     80002358:	fffff097          	auipc	ra,0xfffff
     8000235c:	92e080e7          	jalr	-1746(ra) # 80000c86 <release>
-  return k;
-}
+// Returns 0 on success, -1 on error.
+int
     80002360:	854a                	mv	a0,s2
     80002362:	60e2                	ld	ra,24(sp)
     80002364:	6442                	ld	s0,16(sp)
@@ -5046,12 +5046,12 @@ killed(struct proc *p)
     8000249a:	b795                	j	800023fe <wait+0x90>
 
 000000008000249c <either_copyout>:
-// Copy to either a user address, or kernel address,
-// depending on usr_dst.
-// Returns 0 on success, -1 on error.
-int
-either_copyout(int user_dst, uint64 dst, void *src, uint64 len)
 {
+  struct proc *p = myproc();
+  if(user_src){
+    return copyin(p->pagetable, dst, src, len);
+  } else {
+    memmove(dst, (char*)src, len);
     8000249c:	7179                	add	sp,sp,-48
     8000249e:	f406                	sd	ra,40(sp)
     800024a0:	f022                	sd	s0,32(sp)
@@ -5064,23 +5064,23 @@ either_copyout(int user_dst, uint64 dst, void *src, uint64 len)
     800024ae:	892e                	mv	s2,a1
     800024b0:	89b2                	mv	s3,a2
     800024b2:	8a36                	mv	s4,a3
-  struct proc *p = myproc();
+    return 0;
     800024b4:	fffff097          	auipc	ra,0xfffff
     800024b8:	4f2080e7          	jalr	1266(ra) # 800019a6 <myproc>
-  if(user_dst){
+  }
     800024bc:	c08d                	beqz	s1,800024de <either_copyout+0x42>
-    return copyout(p->pagetable, dst, src, len);
+}
     800024be:	86d2                	mv	a3,s4
     800024c0:	864e                	mv	a2,s3
     800024c2:	85ca                	mv	a1,s2
     800024c4:	6928                	ld	a0,80(a0)
     800024c6:	fffff097          	auipc	ra,0xfffff
     800024ca:	1a0080e7          	jalr	416(ra) # 80001666 <copyout>
-  } else {
-    memmove((char *)dst, src, len);
-    return 0;
-  }
-}
+
+// Print a process listing to console.  For debugging.
+// Runs when user types ^P on console.
+// No lock to avoid wedging a stuck machine further.
+void
     800024ce:	70a2                	ld	ra,40(sp)
     800024d0:	7402                	ld	s0,32(sp)
     800024d2:	64e2                	ld	s1,24(sp)
@@ -5089,23 +5089,23 @@ either_copyout(int user_dst, uint64 dst, void *src, uint64 len)
     800024d8:	6a02                	ld	s4,0(sp)
     800024da:	6145                	add	sp,sp,48
     800024dc:	8082                	ret
-    memmove((char *)dst, src, len);
+// Print a process listing to console.  For debugging.
     800024de:	000a061b          	sext.w	a2,s4
     800024e2:	85ce                	mv	a1,s3
     800024e4:	854a                	mv	a0,s2
     800024e6:	fffff097          	auipc	ra,0xfffff
     800024ea:	844080e7          	jalr	-1980(ra) # 80000d2a <memmove>
-    return 0;
+// Runs when user types ^P on console.
     800024ee:	8526                	mv	a0,s1
     800024f0:	bff9                	j	800024ce <either_copyout+0x32>
 
 00000000800024f2 <either_copyin>:
-// Copy from either a user address, or kernel address,
-// depending on usr_src.
-// Returns 0 on success, -1 on error.
-int
-either_copyin(void *dst, int user_src, uint64 src, uint64 len)
 {
+  static char *states[] = {
+  [UNUSED]    "unused",
+  [USED]      "used",
+  [SLEEPING]  "sleep ",
+  [RUNNABLE]  "runble",
     800024f2:	7179                	add	sp,sp,-48
     800024f4:	f406                	sd	ra,40(sp)
     800024f6:	f022                	sd	s0,32(sp)
@@ -5118,23 +5118,23 @@ either_copyin(void *dst, int user_src, uint64 src, uint64 len)
     80002504:	84ae                	mv	s1,a1
     80002506:	89b2                	mv	s3,a2
     80002508:	8a36                	mv	s4,a3
-  struct proc *p = myproc();
+  [RUNNING]   "run   ",
     8000250a:	fffff097          	auipc	ra,0xfffff
     8000250e:	49c080e7          	jalr	1180(ra) # 800019a6 <myproc>
-  if(user_src){
+  [ZOMBIE]    "zombie"
     80002512:	c08d                	beqz	s1,80002534 <either_copyin+0x42>
-    return copyin(p->pagetable, dst, src, len);
+  };
     80002514:	86d2                	mv	a3,s4
     80002516:	864e                	mv	a2,s3
     80002518:	85ca                	mv	a1,s2
     8000251a:	6928                	ld	a0,80(a0)
     8000251c:	fffff097          	auipc	ra,0xfffff
     80002520:	1d6080e7          	jalr	470(ra) # 800016f2 <copyin>
-  } else {
-    memmove(dst, (char*)src, len);
-    return 0;
-  }
-}
+  struct proc *p;
+  char *state;
+
+  printf("\n");
+  for(p = proc; p < &proc[NPROC]; p++){
     80002524:	70a2                	ld	ra,40(sp)
     80002526:	7402                	ld	s0,32(sp)
     80002528:	64e2                	ld	s1,24(sp)
@@ -5143,23 +5143,23 @@ either_copyin(void *dst, int user_src, uint64 src, uint64 len)
     8000252e:	6a02                	ld	s4,0(sp)
     80002530:	6145                	add	sp,sp,48
     80002532:	8082                	ret
-    memmove(dst, (char*)src, len);
+  char *state;
     80002534:	000a061b          	sext.w	a2,s4
     80002538:	85ce                	mv	a1,s3
     8000253a:	854a                	mv	a0,s2
     8000253c:	ffffe097          	auipc	ra,0xffffe
     80002540:	7ee080e7          	jalr	2030(ra) # 80000d2a <memmove>
-    return 0;
+
     80002544:	8526                	mv	a0,s1
     80002546:	bff9                	j	80002524 <either_copyin+0x32>
 
 0000000080002548 <procdump>:
-// Print a process listing to console.  For debugging.
-// Runs when user types ^P on console.
-// No lock to avoid wedging a stuck machine further.
-void
-procdump(void)
-{
+      continue;
+    if(p->state >= 0 && p->state < NELEM(states) && states[p->state])
+      state = states[p->state];
+    else
+      state = "???";
+    printf("%d %s %s", p->pid, state, p->name);
     80002548:	715d                	add	sp,sp,-80
     8000254a:	e486                	sd	ra,72(sp)
     8000254c:	e0a2                	sd	s0,64(sp)
@@ -5171,70 +5171,45 @@ procdump(void)
     80002558:	e85a                	sd	s6,16(sp)
     8000255a:	e45e                	sd	s7,8(sp)
     8000255c:	0880                	add	s0,sp,80
-  [ZOMBIE]    "zombie"
-  };
-  struct proc *p;
-  char *state;
-
-  printf("\n");
     8000255e:	00006517          	auipc	a0,0x6
     80002562:	b6a50513          	add	a0,a0,-1174 # 800080c8 <digits+0x88>
     80002566:	ffffe097          	auipc	ra,0xffffe
     8000256a:	020080e7          	jalr	32(ra) # 80000586 <printf>
-  for(p = proc; p < &proc[NPROC]; p++){
     8000256e:	0000f497          	auipc	s1,0xf
     80002572:	b5a48493          	add	s1,s1,-1190 # 800110c8 <proc+0x158>
     80002576:	00014917          	auipc	s2,0x14
     8000257a:	55290913          	add	s2,s2,1362 # 80016ac8 <bcache+0x140>
-    if(p->state == UNUSED)
-      continue;
-    if(p->state >= 0 && p->state < NELEM(states) && states[p->state])
     8000257e:	4b15                	li	s6,5
-      state = states[p->state];
-    else
-      state = "???";
     80002580:	00006997          	auipc	s3,0x6
     80002584:	d0098993          	add	s3,s3,-768 # 80008280 <digits+0x240>
-    printf("%d %s %s", p->pid, state, p->name);
     80002588:	00006a97          	auipc	s5,0x6
     8000258c:	d00a8a93          	add	s5,s5,-768 # 80008288 <digits+0x248>
-    printf("\n");
     80002590:	00006a17          	auipc	s4,0x6
     80002594:	b38a0a13          	add	s4,s4,-1224 # 800080c8 <digits+0x88>
-    if(p->state >= 0 && p->state < NELEM(states) && states[p->state])
     80002598:	00006b97          	auipc	s7,0x6
     8000259c:	d30b8b93          	add	s7,s7,-720 # 800082c8 <states.0>
     800025a0:	a00d                	j	800025c2 <procdump+0x7a>
-    printf("%d %s %s", p->pid, state, p->name);
     800025a2:	ed86a583          	lw	a1,-296(a3)
     800025a6:	8556                	mv	a0,s5
     800025a8:	ffffe097          	auipc	ra,0xffffe
     800025ac:	fde080e7          	jalr	-34(ra) # 80000586 <printf>
-    printf("\n");
     800025b0:	8552                	mv	a0,s4
     800025b2:	ffffe097          	auipc	ra,0xffffe
     800025b6:	fd4080e7          	jalr	-44(ra) # 80000586 <printf>
-  for(p = proc; p < &proc[NPROC]; p++){
     800025ba:	16848493          	add	s1,s1,360
     800025be:	03248263          	beq	s1,s2,800025e2 <procdump+0x9a>
-    if(p->state == UNUSED)
     800025c2:	86a6                	mv	a3,s1
     800025c4:	ec04a783          	lw	a5,-320(s1)
     800025c8:	dbed                	beqz	a5,800025ba <procdump+0x72>
-      state = "???";
     800025ca:	864e                	mv	a2,s3
-    if(p->state >= 0 && p->state < NELEM(states) && states[p->state])
     800025cc:	fcfb6be3          	bltu	s6,a5,800025a2 <procdump+0x5a>
     800025d0:	02079713          	sll	a4,a5,0x20
     800025d4:	01d75793          	srl	a5,a4,0x1d
     800025d8:	97de                	add	a5,a5,s7
     800025da:	6390                	ld	a2,0(a5)
     800025dc:	f279                	bnez	a2,800025a2 <procdump+0x5a>
-      state = "???";
     800025de:	864e                	mv	a2,s3
     800025e0:	b7c9                	j	800025a2 <procdump+0x5a>
-  }
-}
     800025e2:	60a6                	ld	ra,72(sp)
     800025e4:	6406                	ld	s0,64(sp)
     800025e6:	74e2                	ld	s1,56(sp)
@@ -5997,29 +5972,29 @@ argstr(int n, char *buf, int max)
     80002b7c:	8082                	ret
 
 0000000080002b7e <syscall>:
-[SYS_getfilenum] sys_getfilenum,
-};
-
 void
 syscall(void)
 {
+  int num;
+  struct proc *p = myproc();
+
     80002b7e:	1101                	add	sp,sp,-32
     80002b80:	ec06                	sd	ra,24(sp)
     80002b82:	e822                	sd	s0,16(sp)
     80002b84:	e426                	sd	s1,8(sp)
     80002b86:	e04a                	sd	s2,0(sp)
     80002b88:	1000                	add	s0,sp,32
-  int num;
-  struct proc *p = myproc();
+  num = p->trapframe->a7;
+  if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     80002b8a:	fffff097          	auipc	ra,0xfffff
     80002b8e:	e1c080e7          	jalr	-484(ra) # 800019a6 <myproc>
     80002b92:	84aa                	mv	s1,a0
-
-  num = p->trapframe->a7;
+    // Use num to lookup the system call function for num, call it,
+    // and store its return value in p->trapframe->a0
     80002b94:	05853903          	ld	s2,88(a0)
     80002b98:	0a893783          	ld	a5,168(s2)
     80002b9c:	0007869b          	sext.w	a3,a5
-  if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
+    p->trapframe->a0 = syscalls[num]();
     80002ba0:	37fd                	addw	a5,a5,-1
     80002ba2:	4755                	li	a4,21
     80002ba4:	00f76f63          	bltu	a4,a5,80002bc2 <syscall+0x44>
@@ -6029,27 +6004,24 @@ syscall(void)
     80002bb4:	97ba                	add	a5,a5,a4
     80002bb6:	639c                	ld	a5,0(a5)
     80002bb8:	c789                	beqz	a5,80002bc2 <syscall+0x44>
-    // Use num to lookup the system call function for num, call it,
-    // and store its return value in p->trapframe->a0
-    p->trapframe->a0 = syscalls[num]();
+  } else {
+    printf("%d %s: unknown sys call %d\n",
+            p->pid, p->name, num);
     80002bba:	9782                	jalr	a5
     80002bbc:	06a93823          	sd	a0,112(s2)
     80002bc0:	a839                	j	80002bde <syscall+0x60>
-  } else {
-    printf("%d %s: unknown sys call %d\n",
+    p->trapframe->a0 = -1;
+  }
     80002bc2:	15848613          	add	a2,s1,344
     80002bc6:	588c                	lw	a1,48(s1)
     80002bc8:	00006517          	auipc	a0,0x6
     80002bcc:	85050513          	add	a0,a0,-1968 # 80008418 <states.0+0x150>
     80002bd0:	ffffe097          	auipc	ra,0xffffe
     80002bd4:	9b6080e7          	jalr	-1610(ra) # 80000586 <printf>
-            p->pid, p->name, num);
-    p->trapframe->a0 = -1;
+}
     80002bd8:	6cbc                	ld	a5,88(s1)
     80002bda:	577d                	li	a4,-1
     80002bdc:	fbb8                	sd	a4,112(a5)
-  }
-}
     80002bde:	60e2                	ld	ra,24(sp)
     80002be0:	6442                	ld	s0,16(sp)
     80002be2:	64a2                	ld	s1,8(sp)
@@ -6333,23 +6305,14 @@ sys_uptime(void)
     80002dc8:	8082                	ret
 
 0000000080002dca <sys_getfilenum>:
-
-
-uint64
-sys_getfilenum(void)
-{
     80002dca:	1101                	add	sp,sp,-32
     80002dcc:	ec06                	sd	ra,24(sp)
     80002dce:	e822                	sd	s0,16(sp)
     80002dd0:	1000                	add	s0,sp,32
-  int pid;
-
-  argint(0, &pid);
     80002dd2:	fec40593          	add	a1,s0,-20
     80002dd6:	4501                	li	a0,0
     80002dd8:	00000097          	auipc	ra,0x0
     80002ddc:	d2e080e7          	jalr	-722(ra) # 80002b06 <argint>
-  return getfilenum(pid);
     80002de0:	fec42503          	lw	a0,-20(s0)
     80002de4:	fffff097          	auipc	ra,0xfffff
     80002de8:	4e6080e7          	jalr	1254(ra) # 800022ca <getfilenum>

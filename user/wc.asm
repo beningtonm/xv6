@@ -860,13 +860,8 @@ uptime:
  4ae:	8082                	ret
 
 00000000000004b0 <getfilenum>:
-.global getfilenum
-getfilenum:
- li a7, SYS_getfilenum
  4b0:	48d9                	li	a7,22
- ecall
  4b2:	00000073          	ecall
- ret
  4b6:	8082                	ret
 
 00000000000004b8 <putc>:

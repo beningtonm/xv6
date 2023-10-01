@@ -810,11 +810,6 @@ uptime:
  442:	8082                	ret
 
 0000000000000444 <getfilenum>:
-.global getfilenum
-getfilenum:
- li a7, SYS_getfilenum
  444:	48d9                	li	a7,22
- ecall
  446:	00000073          	ecall
- ret
  44a:	8082                	ret

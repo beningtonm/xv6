@@ -707,13 +707,8 @@ uptime:
  388:	8082                	ret
 
 000000000000038a <getfilenum>:
-.global getfilenum
-getfilenum:
- li a7, SYS_getfilenum
  38a:	48d9                	li	a7,22
- ecall
  38c:	00000073          	ecall
- ret
  390:	8082                	ret
 
 0000000000000392 <putc>:

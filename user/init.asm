@@ -771,13 +771,8 @@ uptime:
  41c:	8082                	ret
 
 000000000000041e <getfilenum>:
-.global getfilenum
-getfilenum:
- li a7, SYS_getfilenum
  41e:	48d9                	li	a7,22
- ecall
  420:	00000073          	ecall
- ret
  424:	8082                	ret
 
 0000000000000426 <putc>:

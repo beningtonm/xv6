@@ -2097,13 +2097,8 @@ uptime:
      e94:	8082                	ret
 
 0000000000000e96 <getfilenum>:
-.global getfilenum
-getfilenum:
- li a7, SYS_getfilenum
      e96:	48d9                	li	a7,22
- ecall
      e98:	00000073          	ecall
- ret
      e9c:	8082                	ret
 
 0000000000000e9e <putc>:

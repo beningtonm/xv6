@@ -3760,12 +3760,6 @@ outofinodes(char *s)
     exit(xstatus);
     23fe:	00003097          	auipc	ra,0x3
     2402:	790080e7          	jalr	1936(ra) # 5b8e <exit>
-
-static inline uint64
-r_sp()
-{
-  uint64 x;
-  asm volatile("mv %0, sp" : "=r" (x) );
     2406:	870a                	mv	a4,sp
     printf("%s: stacktest: read below stack %p\n", s, *sp);
     2408:	77fd                	lui	a5,0xfffff
@@ -9847,13 +9841,8 @@ uptime:
     5c2c:	8082                	ret
 
 0000000000005c2e <getfilenum>:
-.global getfilenum
-getfilenum:
- li a7, SYS_getfilenum
     5c2e:	48d9                	li	a7,22
- ecall
     5c30:	00000073          	ecall
- ret
     5c34:	8082                	ret
 
 0000000000005c36 <putc>:

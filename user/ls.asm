@@ -974,13 +974,8 @@ uptime:
  5f6:	8082                	ret
 
 00000000000005f8 <getfilenum>:
-.global getfilenum
-getfilenum:
- li a7, SYS_getfilenum
  5f8:	48d9                	li	a7,22
- ecall
  5fa:	00000073          	ecall
- ret
  5fe:	8082                	ret
 
 0000000000000600 <putc>:

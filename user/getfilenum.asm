@@ -5,17 +5,10 @@ user/_getfilenum:     file format elf64-littleriscv
 Disassembly of section .text:
 
 0000000000000000 <openFive>:
-int fd2=0;
-int fd3=0;
-int fd4=0;
-int fd5=0;
-void openFive()
-{
    0:	1141                	add	sp,sp,-16
    2:	e406                	sd	ra,8(sp)
    4:	e022                	sd	s0,0(sp)
    6:	0800                	add	s0,sp,16
-    fd1 = open("gfilenumtest1", O_CREATE|O_WRONLY);
    8:	20100593          	li	a1,513
    c:	00001517          	auipc	a0,0x1
   10:	9a450513          	add	a0,a0,-1628 # 9b0 <malloc+0xe6>
@@ -23,7 +16,6 @@ void openFive()
   18:	4ce080e7          	jalr	1230(ra) # 4e2 <open>
   1c:	00001797          	auipc	a5,0x1
   20:	fea7aa23          	sw	a0,-12(a5) # 1010 <fd1>
-    fd2 = open("gfilenumtest2", O_CREATE|O_WRONLY);
   24:	20100593          	li	a1,513
   28:	00001517          	auipc	a0,0x1
   2c:	99850513          	add	a0,a0,-1640 # 9c0 <malloc+0xf6>
@@ -31,7 +23,6 @@ void openFive()
   34:	4b2080e7          	jalr	1202(ra) # 4e2 <open>
   38:	00001797          	auipc	a5,0x1
   3c:	fca7aa23          	sw	a0,-44(a5) # 100c <fd2>
-    fd3 = open("gfilenumtest3", O_CREATE|O_WRONLY);
   40:	20100593          	li	a1,513
   44:	00001517          	auipc	a0,0x1
   48:	98c50513          	add	a0,a0,-1652 # 9d0 <malloc+0x106>
@@ -39,7 +30,6 @@ void openFive()
   50:	496080e7          	jalr	1174(ra) # 4e2 <open>
   54:	00001797          	auipc	a5,0x1
   58:	faa7aa23          	sw	a0,-76(a5) # 1008 <fd3>
-    fd4 = open("gfilenumtest4", O_CREATE|O_WRONLY);
   5c:	20100593          	li	a1,513
   60:	00001517          	auipc	a0,0x1
   64:	98050513          	add	a0,a0,-1664 # 9e0 <malloc+0x116>
@@ -47,7 +37,6 @@ void openFive()
   6c:	47a080e7          	jalr	1146(ra) # 4e2 <open>
   70:	00001797          	auipc	a5,0x1
   74:	f8a7aa23          	sw	a0,-108(a5) # 1004 <fd4>
-    fd5 = open("gfilenumtest5", O_CREATE|O_WRONLY);
   78:	20100593          	li	a1,513
   7c:	00001517          	auipc	a0,0x1
   80:	97450513          	add	a0,a0,-1676 # 9f0 <malloc+0x126>
@@ -55,38 +44,29 @@ void openFive()
   88:	45e080e7          	jalr	1118(ra) # 4e2 <open>
   8c:	00001797          	auipc	a5,0x1
   90:	f6a7aa23          	sw	a0,-140(a5) # 1000 <fd5>
-}
   94:	60a2                	ld	ra,8(sp)
   96:	6402                	ld	s0,0(sp)
   98:	0141                	add	sp,sp,16
   9a:	8082                	ret
 
 000000000000009c <main>:
-int
-main(int argc, char **argv)
-{
   9c:	1101                	add	sp,sp,-32
   9e:	ec06                	sd	ra,24(sp)
   a0:	e822                	sd	s0,16(sp)
   a2:	e426                	sd	s1,8(sp)
   a4:	e04a                	sd	s2,0(sp)
   a6:	1000                	add	s0,sp,32
-  int pid = getpid();
   a8:	00000097          	auipc	ra,0x0
   ac:	47a080e7          	jalr	1146(ra) # 522 <getpid>
   b0:	84aa                	mv	s1,a0
-  kill(5);
   b2:	4515                	li	a0,5
   b4:	00000097          	auipc	ra,0x0
   b8:	41e080e7          	jalr	1054(ra) # 4d2 <kill>
-
-  printf("files open for %d\n:",pid);
   bc:	85a6                	mv	a1,s1
   be:	00001517          	auipc	a0,0x1
   c2:	94250513          	add	a0,a0,-1726 # a00 <malloc+0x136>
   c6:	00000097          	auipc	ra,0x0
   ca:	74c080e7          	jalr	1868(ra) # 812 <printf>
-  printf("before opening any additional: %d (should be 3)\n",getfilenum(pid));
   ce:	8526                	mv	a0,s1
   d0:	00000097          	auipc	ra,0x0
   d4:	472080e7          	jalr	1138(ra) # 542 <getfilenum>
@@ -95,10 +75,8 @@ main(int argc, char **argv)
   de:	93e50513          	add	a0,a0,-1730 # a18 <malloc+0x14e>
   e2:	00000097          	auipc	ra,0x0
   e6:	730080e7          	jalr	1840(ra) # 812 <printf>
-  openFive();
   ea:	00000097          	auipc	ra,0x0
   ee:	f16080e7          	jalr	-234(ra) # 0 <openFive>
-  printf("opened 5: %d (should be 8)\n",getfilenum(pid));
   f2:	8526                	mv	a0,s1
   f4:	00000097          	auipc	ra,0x0
   f8:	44e080e7          	jalr	1102(ra) # 542 <getfilenum>
@@ -107,12 +85,10 @@ main(int argc, char **argv)
  102:	95250513          	add	a0,a0,-1710 # a50 <malloc+0x186>
  106:	00000097          	auipc	ra,0x0
  10a:	70c080e7          	jalr	1804(ra) # 812 <printf>
-  close(fd3);
  10e:	00001517          	auipc	a0,0x1
  112:	efa52503          	lw	a0,-262(a0) # 1008 <fd3>
  116:	00000097          	auipc	ra,0x0
  11a:	3b4080e7          	jalr	948(ra) # 4ca <close>
-  printf("closed 1: %d (should be 7)\n",getfilenum(pid));
  11e:	8526                	mv	a0,s1
  120:	00000097          	auipc	ra,0x0
  124:	422080e7          	jalr	1058(ra) # 542 <getfilenum>
@@ -121,12 +97,10 @@ main(int argc, char **argv)
  12e:	94650513          	add	a0,a0,-1722 # a70 <malloc+0x1a6>
  132:	00000097          	auipc	ra,0x0
  136:	6e0080e7          	jalr	1760(ra) # 812 <printf>
-  close(fd1);
  13a:	00001517          	auipc	a0,0x1
  13e:	ed652503          	lw	a0,-298(a0) # 1010 <fd1>
  142:	00000097          	auipc	ra,0x0
  146:	388080e7          	jalr	904(ra) # 4ca <close>
-  printf("closed another: %d (should be 6)\n",getfilenum(pid));
  14a:	8526                	mv	a0,s1
  14c:	00000097          	auipc	ra,0x0
  150:	3f6080e7          	jalr	1014(ra) # 542 <getfilenum>
@@ -135,13 +109,11 @@ main(int argc, char **argv)
  15a:	93a50513          	add	a0,a0,-1734 # a90 <malloc+0x1c6>
  15e:	00000097          	auipc	ra,0x0
  162:	6b4080e7          	jalr	1716(ra) # 812 <printf>
-  close(fd5);
  166:	00001917          	auipc	s2,0x1
  16a:	e9a90913          	add	s2,s2,-358 # 1000 <fd5>
  16e:	00092503          	lw	a0,0(s2)
  172:	00000097          	auipc	ra,0x0
  176:	358080e7          	jalr	856(ra) # 4ca <close>
-  printf("closed another: %d (should be 5)\n",getfilenum(pid));
  17a:	8526                	mv	a0,s1
  17c:	00000097          	auipc	ra,0x0
  180:	3c6080e7          	jalr	966(ra) # 542 <getfilenum>
@@ -150,14 +122,12 @@ main(int argc, char **argv)
  18a:	93250513          	add	a0,a0,-1742 # ab8 <malloc+0x1ee>
  18e:	00000097          	auipc	ra,0x0
  192:	684080e7          	jalr	1668(ra) # 812 <printf>
-  fd5 = open("gfilenmumtest6", O_CREATE|O_WRONLY);
  196:	20100593          	li	a1,513
  19a:	00001517          	auipc	a0,0x1
  19e:	94650513          	add	a0,a0,-1722 # ae0 <malloc+0x216>
  1a2:	00000097          	auipc	ra,0x0
  1a6:	340080e7          	jalr	832(ra) # 4e2 <open>
  1aa:	00a92023          	sw	a0,0(s2)
-  printf("opened 1: %d (should be 6)\n",getfilenum(pid));
  1ae:	8526                	mv	a0,s1
  1b0:	00000097          	auipc	ra,0x0
  1b4:	392080e7          	jalr	914(ra) # 542 <getfilenum>
@@ -166,21 +136,17 @@ main(int argc, char **argv)
  1be:	93650513          	add	a0,a0,-1738 # af0 <malloc+0x226>
  1c2:	00000097          	auipc	ra,0x0
  1c6:	650080e7          	jalr	1616(ra) # 812 <printf>
-  close(fd5);
  1ca:	00092503          	lw	a0,0(s2)
  1ce:	00000097          	auipc	ra,0x0
  1d2:	2fc080e7          	jalr	764(ra) # 4ca <close>
-  close(fd2);
  1d6:	00001517          	auipc	a0,0x1
  1da:	e3652503          	lw	a0,-458(a0) # 100c <fd2>
  1de:	00000097          	auipc	ra,0x0
  1e2:	2ec080e7          	jalr	748(ra) # 4ca <close>
-  close(fd4);
  1e6:	00001517          	auipc	a0,0x1
  1ea:	e1e52503          	lw	a0,-482(a0) # 1004 <fd4>
  1ee:	00000097          	auipc	ra,0x0
  1f2:	2dc080e7          	jalr	732(ra) # 4ca <close>
-  printf("closed all: %d (should be 3)\n",getfilenum(pid));
  1f6:	8526                	mv	a0,s1
  1f8:	00000097          	auipc	ra,0x0
  1fc:	34a080e7          	jalr	842(ra) # 542 <getfilenum>
@@ -189,7 +155,6 @@ main(int argc, char **argv)
  206:	90e50513          	add	a0,a0,-1778 # b10 <malloc+0x246>
  20a:	00000097          	auipc	ra,0x0
  20e:	608080e7          	jalr	1544(ra) # 812 <printf>
-  exit(0);
  212:	4501                	li	a0,0
  214:	00000097          	auipc	ra,0x0
  218:	28e080e7          	jalr	654(ra) # 4a2 <exit>
@@ -845,13 +810,8 @@ uptime:
  540:	8082                	ret
 
 0000000000000542 <getfilenum>:
-.global getfilenum
-getfilenum:
- li a7, SYS_getfilenum
  542:	48d9                	li	a7,22
- ecall
  544:	00000073          	ecall
- ret
  548:	8082                	ret
 
 000000000000054a <putc>:
